@@ -1,0 +1,2 @@
+# Speech_gender_recognition
+使用机器学习的方法判断一段音频信号是男性还是女性。
