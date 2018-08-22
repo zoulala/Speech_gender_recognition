@@ -35,23 +35,27 @@ print(voice_data.head())
 labels = voice_data['label']
 features = voice_data.drop('label', axis = 1)
 
+# # 标签数据转换为数值
+# size_mapping = {'male':1, 'female':0}
+# labels = labels.map(size_mapping)
+
 # 对于倾斜的特征使用Log转换
 skewed = ['skew', 'kurt']
 features[skewed] = voice_data[skewed].apply(lambda x: np.log(x + 1))
 
 # 对于一些特征使用归一化
-scaler = MinMaxScaler()
-numerical = ['Q25', 'Q75', 'IQR', 'sfm', 'centroid']
-features[numerical] = scaler.fit_transform(voice_data[numerical])
+# scaler = MinMaxScaler()
+# numerical = ['Q25', 'Q75', 'IQR', 'sfm', 'centroid']
+# features[numerical] = scaler.fit_transform(voice_data[numerical])
 
 # 切分训练、测试数据
 x_train,x_test,y_train,y_test = train_test_split(features, labels,test_size=0.2, random_state=30)
 
 # ---------------- 模型构建 ----------------
 # TODO：初始化三个模型
-# clf_A = LinearSVC(random_state=0)
+clf_A = LinearSVC(random_state=0)
 clf_B = DecisionTreeClassifier(random_state=0)
-clf_A = LogisticRegression(random_state=0)
+clf_C = LogisticRegression(random_state=0)
 
 clf_A.fit(x_train,y_train)
 predicts = clf_A.predict(x_test)

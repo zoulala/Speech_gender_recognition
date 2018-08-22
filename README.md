@@ -40,8 +40,8 @@ voice.csv文件，数据来自[github](https://github.com/primaryobjects/voice-g
 - LR accuracy score: 0.914
 
 xgboost:
--
+- XGB accuracy score: 0.986
 
 深度神经网络结果：
-- MLP
+- MLP accuracy score: 0.979
 
