@@ -45,5 +45,5 @@ xgboost:
 - XGB accuracy score: 0.986
 
 深度神经网络结果：
-- MLP accuracy score: 0.979
+- MLP accuracy score: 0.979  (初始参数影响较大，容易局部最优)
 

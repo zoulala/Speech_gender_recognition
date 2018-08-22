@@ -1,7 +1,9 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as pl
 import numpy as np
 import tensorflow as tf
+from model import  Model,Config
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -48,65 +50,26 @@ x_train,x_test,y_train,y_test = train_test_split(features, labels,test_size=0.2,
 
 # ---------------- 多层感知机(MLP) ----------------
 
-banch_size = 64
-n_banch = len(x_train) // banch_size
-
-# inputs
-X = tf.placeholder(dtype=tf.float32, shape=[None, features.shape[-1]])  # 20
-Y = tf.placeholder(dtype=tf.int32, shape=[None])
-keep_drop = tf.placeholder(dtype=tf.float32)
-
-#embedding
-Y_hot = tf.one_hot(Y, depth=2)  # 独热编码[1,2,3] depth=5 --> [[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0]]，此时的输入节点个数为num_classes
-
-# 3层（feed-forward）
-def neural_network():
-    w1 = tf.Variable(tf.random_normal([features.shape[-1], 512], stddev=0.5))
-    b1 = tf.Variable(tf.random_normal([512]))
-    output = tf.matmul(X, w1) + b1
-
-    # output = tf.nn.dropout(output, keep_prob=keep_drop)
-
-    w2 = tf.Variable(tf.random_normal([512, 1024], stddev=.5))
-    b2 = tf.Variable(tf.random_normal([1024]))
-    output = tf.nn.softmax(tf.matmul(output, w2) + b2)
-
-    w3 = tf.Variable(tf.random_normal([1024, 2], stddev=.5))
-    b3 = tf.Variable(tf.random_normal([2]))
-    output = tf.nn.softmax(tf.matmul(output, w3) + b3)
-    return output
 
 
-# 训练神经网络
-def train_neural_network():
-    output = neural_network()
 
-    cost = tf.reduce_mean(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=Y_hot, logits=output)))
-    lr = tf.Variable(0.001, dtype=tf.float32, trainable=False)
-    opt = tf.train.AdamOptimizer(learning_rate=lr)
-    var_list = [t for t in tf.trainable_variables()]
-    train_step = opt.minimize(cost, var_list=var_list)
+model = Model(Config, features.shape[-1])
 
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        for epoch in range(200):
-            # sess.run(tf.assign(lr, 0.001 * (0.97 ** epoch)))
-
-            for banch in range(n_banch):
-                voice_banch = x_train[banch * banch_size:(banch + 1) * (banch_size)]
-                label_banch = y_train[banch * banch_size:(banch + 1) * (banch_size)]
-                _, loss = sess.run([train_step, cost], feed_dict={X: voice_banch, Y: label_banch, keep_drop:0.7})
-            if epoch%10 == 0:
-                print(epoch, loss)
-
-        # 准确率
-        prediction = tf.equal(tf.argmax(output, 1), tf.argmax(Y_hot, 1))
-        accuracy = tf.reduce_mean(tf.cast(prediction, dtype=tf.float32))
-        accuracy = sess.run(accuracy, feed_dict={X: x_test, Y: y_test,keep_drop:1})
-        print("准确率", accuracy)
-
-        # prediction = sess.run(output, feed_dict={X: test_x})
+def batch_generator(x ,y , batchsize):
+    '''产生训练batch样本'''
+    assert len(x)==len(y), 'error:len_x != len_y'
+    n_samples = len(y)
+    n_batches = int(n_samples/batchsize)
+    n = n_batches * batchsize
+    while True:
+        for i in range(0, n, batchsize):
+            voice_banch = x[i:i +batchsize]
+            label_banch = y[i:i +batchsize]
+            yield voice_banch,label_banch
 
 
-train_neural_network()
+model.train( batch_generator(x_train,y_train,Config.batch_size), x_test,y_test)
+
+
+
