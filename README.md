@@ -7,6 +7,8 @@
 - http://blog.topspeedsnail.com/archives/10729
 
 # Data
+数据是对声音wav信号进行提取的特征数据。若要从wav信号到特征数据可以参考上面链接。
+
 voice.csv文件，数据来自[github](https://github.com/primaryobjects/voice-gender)
 
 格式如下：
